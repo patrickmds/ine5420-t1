@@ -7,6 +7,7 @@ authors = ["Patrick <patricksjb1@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 PySimpleGUI = "^4.59.0"
+matplotlib = "^3.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
