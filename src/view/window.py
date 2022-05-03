@@ -95,6 +95,8 @@ def open_window():
     draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
 
     drawing = False
+    vertex_number = 0
+    line_ids = []
     start_point = end_point = None
     # Create an event loop
     while True:
@@ -125,7 +127,7 @@ def open_window():
             "-point-",
             "-line-",
             "-wireframe-",
-        ] and not dragging:
+        ] and not drawing:
             window.find_element(active_button).update(button_color="white")
             active_button = event
 
@@ -194,9 +196,45 @@ def open_window():
                     line = viewport.draw_line(
                         start_point, lastxy, color="blue", width=2
                     )
+            if active_button == "-wireframe-":
+                if not event.endswith("+MOVE"):
+                    print(event)
+                if event.endswith("+LEFT") and not drawing:
+                    if vertex_number == 0:
+                        first_point = x, y
+                    start_point = x, y
+                    drawing = True
+                    line = viewport.draw_line(
+                        start_point, start_point, color="blue", width=2
+                    )
+                    lastxy = x, y
+                    vertex_number +=1
+                elif event.endswith("+UP") and is_close_enough(first_point, (x, y)) and drawing and vertex_number > 2:
+                    end_point = (x, y)
+                    viewport.delete_figure(line)
+                    viewport.draw_line(start_point, first_point, color="red", width=2)
+                    drawing = False
+                    items.append({"id": line + 1, "type": "wireframe", "start": start_point, "end": first_point})
+                    window.find_element("-itemlist-").update(values=items)
+                    vertex_number = 0
+                elif event.endswith("+UP") and (start_point != lastxy) and not is_close_enough(first_point, (x, y)) and drawing:
+                    end_point = x, y
+                    viewport.delete_figure(line)
+                    viewport.draw_line(start_point, end_point, color="red", width=2)
+                    start_point = end_point
+                    vertex_number +=1
+                elif drawing:
+                    lastxy = x, y
+                    viewport.delete_figure(line)
+                    line = viewport.draw_line(
+                        start_point, lastxy, color="blue", width=2
+                    )
 
     window.close()
 
+
+def is_close_enough(first_point, second_point):
+    return abs(first_point[0]-second_point[0]) < 5 and abs(first_point[1]-second_point[1]) < 5
 
 def menu_column():
     sz = (10, 1)
