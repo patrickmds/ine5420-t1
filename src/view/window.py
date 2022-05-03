@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from more_itertools import last
 
 
 def open_window():
@@ -27,6 +28,7 @@ def open_window():
                 border_width=1,
                 enable_events=True,
                 drag_submits=True,
+                motion_events=True,
                 k="-viewport-",
             ),
             sg.Column(
@@ -36,6 +38,8 @@ def open_window():
                             values=items,
                             select_mode=sg.SELECT_MODE_EXTENDED,
                             size=(30, 40),
+                            enable_events=True,
+                            right_click_menu=["&Right", ["Delete"]],
                             k="-itemlist-",
                         )
                     ]
@@ -51,18 +55,21 @@ def open_window():
     window.find_element(active_button).update(button_color="yellow")
 
     viewport = window["-viewport-"]
-    viewport.bind("<Button-1>", "+LEFT+")
+    viewport.bind("<Button-1>", "+LEFT")
 
     # drawing vp line
     draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
 
+    dragging = False
+    start_point = end_point = None
     # Create an event loop
     while True:
         event, values = window.read()
         # End program if user closes window
         if event == sg.WIN_CLOSED:
             break
-        elif event in [
+
+        if event in [
             "-select-",
             "-point-",
             "-line-",
@@ -72,13 +79,44 @@ def open_window():
             active_button = event
             window.find_element(active_button).update(button_color="yellow")
 
+        if event == "Delete":
+            for item in values["-itemlist-"]:
+                viewport.delete_figure(item["id"])
+                items.remove(item)
+            window.find_element("-itemlist-").update(values=items)
+
         if event.startswith("-viewport-"):
             x, y = values["-viewport-"]
-
-            if active_button == "-point-" and event.endswith("+LEFT+"):
-                viewport.draw_point((x, y), 5, color="red")
-                items.append({"type": "point", "x": x, "y": y})
+            # print(x, y, event)
+            if active_button == "-point-" and event.endswith("+LEFT"):
+                point = viewport.draw_point((x, y), 5, color="red")
+                items.append({"id": point, "type": "point", "x": x, "y": y})
                 window.find_element("-itemlist-").update(values=items)
+
+            if active_button == "-line-":
+                if event.endswith("+LEFT"):
+                    start_point = (x, y)
+                    dragging = True
+                    line = viewport.draw_line(start_point, start_point, color="blue")
+                    lastxy = x, y
+                elif event.endswith("+UP"):
+                    end_point = (x, y)
+                    viewport.delete_figure(line)
+                    viewport.draw_line(start_point, end_point, color="red")
+                    dragging = False
+                    items.append(
+                        {
+                            "id": line,
+                            "type": "line",
+                            "start": start_point,
+                            "end": end_point,
+                        }
+                    )
+                    window.find_element("-itemlist-").update(values=items)
+                elif dragging:
+                    lastxy = x, y
+                    viewport.delete_figure(line)
+                    line = viewport.draw_line(start_point, lastxy, color="blue")
 
     window.close()
 
@@ -86,10 +124,34 @@ def open_window():
 def menu_column():
     sz = (10, 1)
     return [
-        [sg.Button("Select", size=sz, enable_events=True, k="-select-")],
-        [sg.Button("Point", size=sz, enable_events=True, k="-point-")],
-        [sg.Button("Line", size=sz, enable_events=True, k="-line-")],
-        [sg.Button("Wireframe", size=sz, enable_events=True, k="-wireframe-")],
+        [
+            sg.Button(
+                "Select",
+                size=sz,
+                button_color="white",
+                enable_events=True,
+                k="-select-",
+            )
+        ],
+        [
+            sg.Button(
+                "Point", size=sz, button_color="white", enable_events=True, k="-point-"
+            )
+        ],
+        [
+            sg.Button(
+                "Line", size=sz, button_color="white", enable_events=True, k="-line-"
+            )
+        ],
+        [
+            sg.Button(
+                "Wireframe",
+                size=sz,
+                button_color="white",
+                enable_events=True,
+                k="-wireframe-",
+            )
+        ],
     ]
 
 
