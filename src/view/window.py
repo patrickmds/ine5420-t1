@@ -80,11 +80,7 @@ def open_window():
 
         if event == "Delete":
             for item in values["-itemlist-"]:
-                if item["type"] == "line":
-                    viewport
-                    viewport.delete_figure(item["id"] + 1)
-                else:
-                    viewport.delete_figure(item["id"])
+                viewport.delete_figure(item["id"])
                 items.remove(item)
             window.find_element("-itemlist-").update(values=items)
 
@@ -112,7 +108,7 @@ def open_window():
                     dragging = False
                     items.append(
                         {
-                            "id": line,
+                            "id": line + 1,
                             "type": "line",
                             "start": start_point,
                             "end": end_point,
