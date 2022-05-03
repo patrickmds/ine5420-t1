@@ -125,8 +125,7 @@ def open_window():
             "-point-",
             "-line-",
             "-wireframe-",
-        ]:
-            """Event to change graphic element"""
+        ] and not dragging:
             window.find_element(active_button).update(button_color="white")
             active_button = event
 
