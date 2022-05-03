@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-from more_itertools import last
 
 
 def open_window():
@@ -54,7 +53,7 @@ def open_window():
 
     window.find_element(active_button).update(button_color="yellow")
 
-    viewport = window["-viewport-"]
+    viewport: sg.Graph = window["-viewport-"]
     viewport.bind("<Button-1>", "+LEFT")
 
     # drawing vp line
@@ -81,15 +80,20 @@ def open_window():
 
         if event == "Delete":
             for item in values["-itemlist-"]:
-                viewport.delete_figure(item["id"])
+                if item["type"] == "line":
+                    viewport
+                    viewport.delete_figure(item["id"] + 1)
+                else:
+                    viewport.delete_figure(item["id"])
                 items.remove(item)
             window.find_element("-itemlist-").update(values=items)
 
         if event.startswith("-viewport-"):
             x, y = values["-viewport-"]
             # print(x, y, event)
+
             if active_button == "-point-" and event.endswith("+LEFT"):
-                point = viewport.draw_point((x, y), 5, color="red")
+                point = viewport.draw_point((x, y), color="red")
                 items.append({"id": point, "type": "point", "x": x, "y": y})
                 window.find_element("-itemlist-").update(values=items)
 
@@ -97,12 +101,14 @@ def open_window():
                 if event.endswith("+LEFT"):
                     start_point = (x, y)
                     dragging = True
-                    line = viewport.draw_line(start_point, start_point, color="blue")
+                    line = viewport.draw_line(
+                        start_point, start_point, color="blue", width=2
+                    )
                     lastxy = x, y
-                elif event.endswith("+UP"):
+                elif event.endswith("+UP") and (start_point != lastxy):
                     end_point = (x, y)
                     viewport.delete_figure(line)
-                    viewport.draw_line(start_point, end_point, color="red")
+                    viewport.draw_line(start_point, end_point, color="red", width=2)
                     dragging = False
                     items.append(
                         {
@@ -116,7 +122,9 @@ def open_window():
                 elif dragging:
                     lastxy = x, y
                     viewport.delete_figure(line)
-                    line = viewport.draw_line(start_point, lastxy, color="blue")
+                    line = viewport.draw_line(
+                        start_point, lastxy, color="blue", width=2
+                    )
 
     window.close()
 
