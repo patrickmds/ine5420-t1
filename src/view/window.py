@@ -36,12 +36,44 @@ def open_window():
                         sg.Listbox(
                             values=items,
                             select_mode=sg.SELECT_MODE_EXTENDED,
-                            size=(30, 40),
+                            size=(40, 40),
                             enable_events=True,
                             right_click_menu=["&Right", ["Delete"]],
                             k="-itemlist-",
                         )
                     ]
+                ],
+                vertical_alignment="t",
+            ),
+            sg.Column(
+                [
+                    [
+                        sg.Button(
+                            "zoom in",
+                            size=(20, 10),
+                            button_color="white",
+                            enable_events=True,
+                            k="-zoom-in-",
+                        )
+                    ],
+                    [
+                        sg.Button(
+                            "zoom out",
+                            size=(20, 10),
+                            button_color="white",
+                            enable_events=True,
+                            k="-zoom-out-",
+                        )
+                    ],
+                    [
+                        sg.Button(
+                            "clear",
+                            size=(20, 10),
+                            button_color="white",
+                            enable_events=True,
+                            k="-clear-",
+                        ),
+                    ],
                 ],
                 vertical_alignment="t",
             ),
@@ -94,14 +126,16 @@ def open_window():
                 window.find_element("-itemlist-").update(values=items)
 
             if active_button == "-line-":
-                if event.endswith("+LEFT"):
+                if not event.endswith("+MOVE"):
+                    print(event)
+                if event.endswith("+LEFT") and not dragging:
                     start_point = (x, y)
                     dragging = True
                     line = viewport.draw_line(
                         start_point, start_point, color="blue", width=2
                     )
                     lastxy = x, y
-                elif event.endswith("+UP") and (start_point != lastxy):
+                elif event.endswith("+UP") and (start_point != lastxy) and dragging:
                     end_point = (x, y)
                     viewport.delete_figure(line)
                     viewport.draw_line(start_point, end_point, color="red", width=2)
