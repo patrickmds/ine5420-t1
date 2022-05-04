@@ -9,8 +9,8 @@ def open_window():
 
     viewport_step = 50
     viewport_size = viewport_default_size = (600, 600)
-    viewport_x = viewport_size[0] // 2
-    viewport_y = viewport_size[1] // 2
+    viewport_x = viewport_default_x = viewport_size[0] // 2
+    viewport_y = viewport_default_y = viewport_size[1] // 2
 
     top_right = default_top_right = (viewport_x, viewport_y)
     bottom_left = default_bottom_left = (-viewport_x, -viewport_y)
@@ -166,7 +166,10 @@ def open_window():
             window.find_element("-itemlist-").update(values=items)
             viewport.erase()
             viewport.change_coordinates(default_bottom_left, default_top_right)
-            draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
+            viewport_size = viewport_default_size
+            viewport_x = viewport_default_x
+            viewport_y = viewport_default_y
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
 
         if event in [
             "-select-",
