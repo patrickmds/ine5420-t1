@@ -145,6 +145,11 @@ def open_window():
         if event == "Delete":
             """Event to delete elements from sidelist"""
             for item in values["-itemlist-"]:
+                if item['type'] == 'wireframe':
+                    for line in item['id']:
+                        viewport.delete_figure(line)
+                    items.remove(item)
+                    break
                 viewport.delete_figure(item["id"])
                 items.remove(item)
             window.find_element("-itemlist-").update(values=items)
@@ -212,15 +217,17 @@ def open_window():
                 elif event.endswith("+UP") and is_close_enough(first_point, (x, y)) and drawing and vertex_number > 2:
                     end_point = (x, y)
                     viewport.delete_figure(line)
-                    viewport.draw_line(start_point, first_point, color="red", width=2)
+                    wire_line = viewport.draw_line(start_point, first_point, color="red", width=2)
+                    line_ids.append(wire_line)
                     drawing = False
-                    items.append({"id": line + 1, "type": "wireframe", "start": start_point, "end": first_point})
+                    items.append({"id": line_ids, "type": "wireframe", "start": start_point, "end": first_point})
                     window.find_element("-itemlist-").update(values=items)
                     vertex_number = 0
                 elif event.endswith("+UP") and (start_point != lastxy) and not is_close_enough(first_point, (x, y)) and drawing:
                     end_point = x, y
                     viewport.delete_figure(line)
-                    viewport.draw_line(start_point, end_point, color="red", width=2)
+                    wire_line = viewport.draw_line(start_point, end_point, color="red", width=2)
+                    line_ids.append(wire_line)
                     start_point = end_point
                     vertex_number +=1
                 elif drawing:
