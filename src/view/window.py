@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from view.util import scale_when_zoom
 
 
 def open_window():
@@ -7,12 +8,12 @@ def open_window():
     active_button = "-select-"
 
     viewport_step = 50
-    viewport_size = (600, 600)
+    viewport_size = viewport_default_size = (600, 600)
     viewport_x = viewport_size[0] // 2
     viewport_y = viewport_size[1] // 2
 
-    top_right = (viewport_x, viewport_y)
-    bottom_left = (-viewport_x, -viewport_y)
+    top_right = default_top_right = (viewport_x, viewport_y)
+    bottom_left = default_bottom_left = (-viewport_x, -viewport_y)
 
     items = []
 
@@ -92,7 +93,9 @@ def open_window():
     # viewport.bind("<MouseWheel>", "-WHEEL")
 
     # drawing vp line
-    draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
+    id_comp_axis = draw_graph_axis_and_ticks(
+        viewport, viewport_x, viewport_y, viewport_step
+    )
 
     drawing = False
     vertex_number = 0
@@ -102,24 +105,69 @@ def open_window():
     while True:
         event, values = window.read()
         # End program if user closes window
-
-        print(event)
+        # print(event)
         if event == sg.WIN_CLOSED:
             break
 
-        if event == "-zoom-in-":
+        if (
+            event == "-zoom-in-"
+            and all(
+                x > y for x, y in zip(viewport_size, (viewport_step, viewport_step))
+            )
+            is True
+        ):
             """Event to zoom in the viewport"""
-            break
+            viewport_size = (
+                viewport_size[0] - viewport_step,
+                viewport_size[1] - viewport_step,
+            )
 
-        if event == "-zoom-out-":
+            viewport_x = viewport_size[0] // 2
+            viewport_y = viewport_size[1] // 2
+
+            top_right = (viewport_x, viewport_y)
+            bottom_left = (-viewport_x, -viewport_y)
+
+            for line in id_comp_axis:
+                viewport.delete_figure(line)
+            viewport.change_coordinates(bottom_left, top_right)
+            id_comp_axis = draw_graph_axis_and_ticks(
+                viewport, viewport_x, viewport_y, viewport_step
+            )
+            for figure in items:
+                scale_when_zoom(viewport, True, figure, viewport_step)
+
+        if (
+            event == "-zoom-out-"
+            and all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True
+        ):
             """Event to zoom out the viewport"""
-            break
+            viewport_size = (
+                viewport_size[0] + viewport_step,
+                viewport_size[1] + viewport_step,
+            )
+
+            viewport_x = viewport_size[0] // 2
+            viewport_y = viewport_size[1] // 2
+
+            top_right = (viewport_x, viewport_y)
+            bottom_left = (-viewport_x, -viewport_y)
+
+            for line in id_comp_axis:
+                viewport.delete_figure(line)
+            viewport.change_coordinates(bottom_left, top_right)
+            id_comp_axis = draw_graph_axis_and_ticks(
+                viewport, viewport_x, viewport_y, viewport_step
+            )
+            for figure in items:
+                scale_when_zoom(viewport, False, figure, viewport_step)
 
         if event == "-reset-":
             """Event to reset the viewport"""
             items = []
             window.find_element("-itemlist-").update(values=items)
             viewport.erase()
+            viewport.change_coordinates(default_bottom_left, default_top_right)
             draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
 
         if event in [
@@ -277,18 +325,33 @@ def menu_column():
     ]
 
 
-def draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, step):
+def draw_graph_axis_and_ticks(viewport: sg.Graph, viewport_x, viewport_y, step):
     min_x = -viewport_x
     max_x = viewport_x
 
     min_y = -viewport_y
     max_y = viewport_y
 
-    viewport.draw_line((0, min_y), (0, max_y), color="black")
-    viewport.draw_line((min_x, 0), (max_x, 0), color="black")
+    id_comp_axis = []
+
+    xaxis = viewport.draw_line((min_x, 0), (max_x, 0), color="black")
+    yaxis = viewport.draw_line((0, min_y), (0, max_y), color="black")
+
+    id_comp_axis.append(xaxis)
+    id_comp_axis.append(yaxis)
 
     for x in range(min_x, max_x + 1, step):
-        viewport.draw_line((x, -3), (x, 3))
+        xline = viewport.draw_line((x, -3), (x, 3))
+        id_comp_axis.append(xline)
+        if x != 0 and x != max_x:
+            text = viewport.draw_text(x, (x, -10), color="black", font="helvetica 8")
+            id_comp_axis.append(text)
 
     for y in range(min_y, max_y + 1, step):
-        viewport.draw_line((-3, y), (3, y))
+        yline = viewport.draw_line((-3, y), (3, y))
+        id_comp_axis.append(yline)
+        if y != 0 and y != max_y:
+            text = viewport.draw_text(y, (-15, y), color="black", font="helvetica 8")
+            id_comp_axis.append(text)
+
+    return id_comp_axis
