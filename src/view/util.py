@@ -52,3 +52,10 @@ def draw_graph_axis_and_ticks(viewport: sg.Graph, viewport_x, viewport_y, step):
         id_comp_axis.append(yline)
 
     return id_comp_axis
+
+
+def is_close_enough(first_point, second_point):
+    return (
+        abs(first_point[0] - second_point[0]) < 5
+        and abs(first_point[1] - second_point[1]) < 5
+    )
