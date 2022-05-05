@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from view.util import redraw_when_zoom, update_item_list
+from view.util import redraw_when_zoom, update_item_list, draw_graph_axis_and_ticks
 
 
 def open_window():
@@ -18,9 +18,93 @@ def open_window():
     items = []
     point_index_gen = line_index_gen = wireframe_index_gen = 0
 
+    button_size = (10, 1)
+
     layout = [
         [
-            sg.Column(menu_column(), vertical_alignment="t", k="-buttons-"),
+            sg.Column(
+                [
+                    [
+                        sg.Column(
+                            [
+                                [
+                                    sg.Button(
+                                        "Select",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-select-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "Point",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-point-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "Line",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-line-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "Wireframe",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-wireframe-",
+                                    )
+                                ],
+                            ],
+                            vertical_alignment="top",
+                            expand_y=True,
+                        )
+                    ],
+                    [
+                        sg.Column(
+                            [
+                                [
+                                    sg.Button(
+                                        "Zoom +",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-zoom-in-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "Zoom -",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-zoom-out-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "Reset",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-reset-",
+                                    ),
+                                ],
+                            ],
+                        )
+                    ],
+                ],
+                expand_y=True,
+                k="-buttons-",
+            ),
             sg.Graph(
                 canvas_size=viewport_size,
                 graph_bottom_left=bottom_left,
@@ -38,44 +122,12 @@ def open_window():
                         sg.Listbox(
                             values=items,
                             select_mode=sg.SELECT_MODE_SINGLE,
-                            size=(40, 40),
+                            size=(20, 40),
                             enable_events=True,
                             right_click_menu=["&Right", ["Delete"]],
                             k="-itemlist-",
                         )
                     ]
-                ],
-                vertical_alignment="t",
-            ),
-            sg.Column(
-                [
-                    [
-                        sg.Button(
-                            "zoom in",
-                            size=(20, 10),
-                            button_color="white",
-                            enable_events=True,
-                            k="-zoom-in-",
-                        )
-                    ],
-                    [
-                        sg.Button(
-                            "zoom out",
-                            size=(20, 10),
-                            button_color="white",
-                            enable_events=True,
-                            k="-zoom-out-",
-                        )
-                    ],
-                    [
-                        sg.Button(
-                            "Reset",
-                            size=(20, 10),
-                            button_color="white",
-                            enable_events=True,
-                            k="-reset-",
-                        ),
-                    ],
                 ],
                 vertical_alignment="t",
             ),
@@ -349,63 +401,3 @@ def is_close_enough(first_point, second_point):
         abs(first_point[0] - second_point[0]) < 5
         and abs(first_point[1] - second_point[1]) < 5
     )
-
-
-def menu_column():
-    sz = (10, 1)
-    return [
-        [
-            sg.Button(
-                "Select",
-                size=sz,
-                button_color="white",
-                enable_events=True,
-                k="-select-",
-            )
-        ],
-        [
-            sg.Button(
-                "Point", size=sz, button_color="white", enable_events=True, k="-point-"
-            )
-        ],
-        [
-            sg.Button(
-                "Line", size=sz, button_color="white", enable_events=True, k="-line-"
-            )
-        ],
-        [
-            sg.Button(
-                "Wireframe",
-                size=sz,
-                button_color="white",
-                enable_events=True,
-                k="-wireframe-",
-            )
-        ],
-    ]
-
-
-def draw_graph_axis_and_ticks(viewport: sg.Graph, viewport_x, viewport_y, step):
-    min_x = -viewport_x
-    max_x = viewport_x
-
-    min_y = -viewport_y
-    max_y = viewport_y
-
-    id_comp_axis = []
-
-    xaxis = viewport.draw_line((min_x, 0), (max_x, 0), color="black")
-    yaxis = viewport.draw_line((0, min_y), (0, max_y), color="black")
-
-    id_comp_axis.append(xaxis)
-    id_comp_axis.append(yaxis)
-
-    for x in range(min_x, max_x + 1, step):
-        xline = viewport.draw_line((x, -3), (x, 3))
-        id_comp_axis.append(xline)
-
-    for y in range(min_y, max_y + 1, step):
-        yline = viewport.draw_line((-3, y), (3, y))
-        id_comp_axis.append(yline)
-
-    return id_comp_axis
