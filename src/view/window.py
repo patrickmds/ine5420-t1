@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from view.util import scale_when_zoom
+from view.util import redraw_when_zoom, update_item_list
 
 
 def open_window():
@@ -16,6 +16,7 @@ def open_window():
     bottom_left = default_bottom_left = (-viewport_x, -viewport_y)
 
     items = []
+    point_index_gen = line_index_gen = wireframe_index_gen = 0
 
     layout = [
         [
@@ -36,7 +37,7 @@ def open_window():
                     [
                         sg.Listbox(
                             values=items,
-                            select_mode=sg.SELECT_MODE_EXTENDED,
+                            select_mode=sg.SELECT_MODE_SINGLE,
                             size=(40, 40),
                             enable_events=True,
                             right_click_menu=["&Right", ["Delete"]],
@@ -100,14 +101,30 @@ def open_window():
     drawing = False
     vertex_number = 0
     line_ids = []
-    start_point = end_point = None
+    wireframe_tuples = []
+    start_point = end_point = unfinished_line = None
+
     # Create an event loop
     while True:
         event, values = window.read()
+
         # End program if user closes window
-        # print(event)
         if event == sg.WIN_CLOSED:
             break
+
+        if (
+            event.startswith("-viewport-") is False
+            and active_button in ["-line-", "-wireframe-"]
+            and unfinished_line is not None
+        ):
+            """Removing unfinished draws"""
+            viewport.delete_figure(unfinished_line)
+            for line in wireframe_tuples:
+                viewport.delete_figure(line["id"])
+
+            drawing = False
+            wireframe_tuples = line_ids = []
+            start_point = end_point = lastxy = unfinished_line = None
 
         if (
             event == "-zoom-in-"
@@ -135,7 +152,7 @@ def open_window():
                 viewport, viewport_x, viewport_y, viewport_step
             )
             for figure in items:
-                scale_when_zoom(viewport, True, figure, viewport_step)
+                redraw_when_zoom(viewport, figure)
 
         if (
             event == "-zoom-out-"
@@ -160,61 +177,61 @@ def open_window():
                 viewport, viewport_x, viewport_y, viewport_step
             )
             for figure in items:
-                scale_when_zoom(viewport, False, figure, viewport_step)
+                redraw_when_zoom(viewport, figure)
 
         if event == "-reset-":
             """Event to reset the viewport"""
             items = []
-            window.find_element("-itemlist-").update(values=items)
+            update_item_list(window, items)
             viewport.erase()
             viewport.change_coordinates(default_bottom_left, default_top_right)
             viewport_size = viewport_default_size
             viewport_x = viewport_default_x
             viewport_y = viewport_default_y
-            id_comp_axis = draw_graph_axis_and_ticks(viewport, viewport_x, viewport_y, viewport_step)
+            id_comp_axis = draw_graph_axis_and_ticks(
+                viewport, viewport_x, viewport_y, viewport_step
+            )
 
         if event in [
             "-select-",
             "-point-",
             "-line-",
             "-wireframe-",
-        ] and not drawing:
+        ]:
             window.find_element(active_button).update(button_color="white")
             active_button = event
-
-            if start_point is not None and drawing is True:
-                """Clean unfinished lines"""
-                it = viewport.get_figures_at_location(start_point)
-                print(it)
-                for id in it:
-                    viewport.delete_figure(id)
-                drawing = False
-                start_point = end_point = lastxy = None
-
             window.find_element(active_button).update(button_color="yellow")
 
         if event == "Delete":
             """Event to delete elements from sidelist"""
-            for item in values["-itemlist-"]:
-                if item['type'] == 'wireframe':
-                    for line in item['id']:
-                        viewport.delete_figure(line)
+            for item in items:
+                if item["name"] in values["-itemlist-"]:
+                    if item["type"] == "wireframe":
+                        for line in item["id"]:
+                            viewport.delete_figure(line)
+                    else:
+                        viewport.delete_figure(item["id"])
                     items.remove(item)
-                    break
-                viewport.delete_figure(item["id"])
-                items.remove(item)
-            window.find_element("-itemlist-").update(values=items)
+            update_item_list(window, items)
 
         if event.startswith("-viewport-"):
             """Event ocurring inside viewport"""
             x, y = values["-viewport-"]
-            # print(x, y, event)
 
             if active_button == "-point-" and event.endswith("+LEFT"):
                 """Event to plot a point from mouse click"""
-                point = viewport.draw_point((x, y), size=2, color="red")
-                items.append({"id": point, "type": "point", "x": x, "y": y})
-                window.find_element("-itemlist-").update(values=items)
+                point = viewport.draw_point((x, y), color="red")
+                point_index_gen += 1
+                items.append(
+                    {
+                        "name": f"point_{point_index_gen}",
+                        "id": point,
+                        "type": "point",
+                        "x": x,
+                        "y": y,
+                    }
+                )
+                update_item_list(window, items)
 
             if active_button == "-line-":
                 """Event to plot a line"""
@@ -226,6 +243,7 @@ def open_window():
                         start_point, start_point, color="blue", width=2
                     )
                     lastxy = x, y
+                    unfinished_line = line
 
                 elif event.endswith("+UP") and (start_point != lastxy) and drawing:
                     """End drawing a line"""
@@ -234,16 +252,19 @@ def open_window():
                     line = viewport.draw_line(
                         start_point, end_point, color="red", width=2
                     )
-                    drawing = False
+                    line_index_gen += 1
                     items.append(
                         {
+                            "name": f"line_{line_index_gen}",
                             "id": line,
                             "type": "line",
                             "start": start_point,
                             "end": end_point,
                         }
                     )
-                    window.find_element("-itemlist-").update(values=items)
+                    drawing = False
+                    unfinished_line = line = None
+                    update_item_list(window, items)
 
                 elif drawing:
                     """Event while drawing a line"""
@@ -252,9 +273,9 @@ def open_window():
                     line = viewport.draw_line(
                         start_point, lastxy, color="blue", width=2
                     )
+                    unfinished_line = line
+
             if active_button == "-wireframe-":
-                if not event.endswith("+MOVE"):
-                    print(event)
                 if event.endswith("+LEFT") and not drawing:
                     if vertex_number == 0:
                         first_point = x, y
@@ -263,36 +284,72 @@ def open_window():
                     line = viewport.draw_line(
                         start_point, start_point, color="blue", width=2
                     )
+                    unfinished_line = line
                     lastxy = x, y
-                    vertex_number +=1
-                elif event.endswith("+UP") and is_close_enough(first_point, (x, y)) and drawing and vertex_number > 2:
+                    vertex_number += 1
+                elif (
+                    event.endswith("+UP")
+                    and is_close_enough(first_point, (x, y))
+                    and drawing
+                    and vertex_number > 2
+                ):
                     end_point = (x, y)
                     viewport.delete_figure(line)
-                    wire_line = viewport.draw_line(start_point, first_point, color="red", width=2)
+                    wire_line = viewport.draw_line(
+                        start_point, first_point, color="red", width=2
+                    )
                     line_ids.append(wire_line)
+                    wireframe_tuples.append(
+                        {"id": wire_line, "start": start_point, "end": end_point}
+                    )
                     drawing = False
-                    items.append({"id": line_ids, "type": "wireframe", "start": start_point, "end": first_point})
-                    window.find_element("-itemlist-").update(values=items)
+                    wireframe_index_gen += 1
+                    items.append(
+                        {
+                            "name": f"wireframe_{wireframe_index_gen}",
+                            "id": line_ids,
+                            "type": "wireframe",
+                            "lines": wireframe_tuples,
+                        }
+                    )
+                    update_item_list(window, items)
+                    unfinished_line = None
+                    wireframe_tuples = line_ids = []
                     vertex_number = 0
-                elif event.endswith("+UP") and (start_point != lastxy) and not is_close_enough(first_point, (x, y)) and drawing:
+                elif (
+                    event.endswith("+UP")
+                    and (start_point != lastxy)
+                    and not is_close_enough(first_point, (x, y))
+                    and drawing
+                ):
                     end_point = x, y
                     viewport.delete_figure(line)
-                    wire_line = viewport.draw_line(start_point, end_point, color="red", width=2)
+                    wire_line = viewport.draw_line(
+                        start_point, end_point, color="red", width=2
+                    )
                     line_ids.append(wire_line)
+                    wireframe_tuples.append(
+                        {"id": wire_line, "start": start_point, "end": end_point}
+                    )
                     start_point = end_point
-                    vertex_number +=1
+                    vertex_number += 1
                 elif drawing:
                     lastxy = x, y
                     viewport.delete_figure(line)
                     line = viewport.draw_line(
                         start_point, lastxy, color="blue", width=2
                     )
+                    unfinished_line = line
 
     window.close()
 
 
 def is_close_enough(first_point, second_point):
-    return abs(first_point[0]-second_point[0]) < 5 and abs(first_point[1]-second_point[1]) < 5
+    return (
+        abs(first_point[0] - second_point[0]) < 5
+        and abs(first_point[1] - second_point[1]) < 5
+    )
+
 
 def menu_column():
     sz = (10, 1)
@@ -346,15 +403,9 @@ def draw_graph_axis_and_ticks(viewport: sg.Graph, viewport_x, viewport_y, step):
     for x in range(min_x, max_x + 1, step):
         xline = viewport.draw_line((x, -3), (x, 3))
         id_comp_axis.append(xline)
-        if x != 0 and x != max_x:
-            text = viewport.draw_text(x, (x, -10), color="black", font="helvetica 8")
-            id_comp_axis.append(text)
 
     for y in range(min_y, max_y + 1, step):
         yline = viewport.draw_line((-3, y), (3, y))
         id_comp_axis.append(yline)
-        if y != 0 and y != max_y:
-            text = viewport.draw_text(y, (-15, y), color="black", font="helvetica 8")
-            id_comp_axis.append(text)
 
     return id_comp_axis
