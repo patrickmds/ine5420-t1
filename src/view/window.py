@@ -1,5 +1,10 @@
 import PySimpleGUI as sg
-from view.util import redraw_when_zoom, update_item_list, draw_graph_axis_and_ticks
+from view.util import (
+    redraw_when_zoom,
+    update_item_list,
+    draw_graph_axis_and_ticks,
+    is_close_enough,
+)
 
 
 def open_window():
@@ -19,6 +24,8 @@ def open_window():
     point_index_gen = line_index_gen = wireframe_index_gen = 0
 
     button_size = (10, 1)
+
+    pos = "-"
 
     layout = [
         [
@@ -105,16 +112,23 @@ def open_window():
                 expand_y=True,
                 k="-buttons-",
             ),
-            sg.Graph(
-                canvas_size=viewport_size,
-                graph_bottom_left=bottom_left,
-                graph_top_right=top_right,
-                background_color="white",
-                border_width=1,
-                enable_events=True,
-                drag_submits=True,
-                motion_events=True,
-                k="-viewport-",
+            sg.Column(
+                [
+                    [
+                        sg.Graph(
+                            canvas_size=viewport_size,
+                            graph_bottom_left=bottom_left,
+                            graph_top_right=top_right,
+                            background_color="white",
+                            border_width=1,
+                            enable_events=True,
+                            drag_submits=True,
+                            motion_events=True,
+                            k="-viewport-",
+                        )
+                    ],
+                    [sg.Text(text=pos, k="-pos-")],
+                ],
             ),
             sg.Column(
                 [
@@ -270,6 +284,9 @@ def open_window():
             """Event ocurring inside viewport"""
             x, y = values["-viewport-"]
 
+            pos = f"({x}, {y})"
+            window.find_element("-pos-").update(pos)
+
             if active_button == "-point-" and event.endswith("+LEFT"):
                 """Event to plot a point from mouse click"""
                 point = viewport.draw_point((x, y), color="red")
@@ -394,10 +411,3 @@ def open_window():
                     unfinished_line = line
 
     window.close()
-
-
-def is_close_enough(first_point, second_point):
-    return (
-        abs(first_point[0] - second_point[0]) < 5
-        and abs(first_point[1] - second_point[1]) < 5
-    )
