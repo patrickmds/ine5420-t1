@@ -168,12 +168,11 @@ def open_window():
     vertex_number = 0
     line_ids = []
     wireframe_tuples = []
-    start_point = end_point = unfinished_line = None
+    start_point = end_point = first_point = unfinished_line = None
 
     # Create an event loop
     while True:
         event, values = window.read()
-
         # End program if user closes window
         if event == sg.WIN_CLOSED:
             break
@@ -190,7 +189,7 @@ def open_window():
 
             drawing = False
             wireframe_tuples = line_ids = []
-            start_point = end_point = lastxy = unfinished_line = None
+            start_point = end_point = lastxy = unfinished_line = first_point = None
 
         if (
             event == "-zoom-in-"
@@ -279,6 +278,7 @@ def open_window():
                         viewport.delete_figure(item["id"])
                     items.remove(item)
             update_item_list(window, items)
+            window.refresh()
 
         if event.startswith("-viewport-"):
             """Event ocurring inside viewport"""
@@ -346,9 +346,9 @@ def open_window():
 
             if active_button == "-wireframe-":
                 if event.endswith("+LEFT") and not drawing:
-                    if vertex_number == 0:
-                        first_point = x, y
                     start_point = x, y
+                    if vertex_number == 0:
+                        first_point = start_point
                     drawing = True
                     line = viewport.draw_line(
                         start_point, start_point, color="blue", width=2
@@ -369,7 +369,7 @@ def open_window():
                     )
                     line_ids.append(wire_line)
                     wireframe_tuples.append(
-                        {"id": wire_line, "start": start_point, "end": end_point}
+                        {"id": wire_line, "start": start_point, "end": first_point}
                     )
                     drawing = False
                     wireframe_index_gen += 1
@@ -381,8 +381,9 @@ def open_window():
                             "lines": wireframe_tuples,
                         }
                     )
+                    print(wireframe_tuples)
                     update_item_list(window, items)
-                    unfinished_line = None
+                    unfinished_line = first_point = None
                     wireframe_tuples = line_ids = []
                     vertex_number = 0
                 elif (

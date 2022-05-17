@@ -9,18 +9,20 @@ def redraw_when_zoom(viewport: sg.Graph, figure):
         figure["id"] = n_id
 
     elif type == "line":
-        start, end = figure["start"], figure["end"]
+        start_line, end_line = figure["start"], figure["end"]
         viewport.delete_figure(figure["id"])
-        n_line = viewport.draw_line(start, end, color="red", width=2)
+        n_line = viewport.draw_line(start_line, end_line, color="red", width=2)
         figure["id"] = n_line
 
     elif type == "wireframe":
         lines = figure["lines"]
         for line in lines:
-            start, end = line["start"], line["end"]
+            start_wireline, end_wireline = line["start"], line["end"]
             viewport.delete_figure(line["id"])
-            n_line = viewport.draw_line(start, end, color="red", width=2)
-            line["id"] = n_line
+            n_wireline = viewport.draw_line(
+                start_wireline, end_wireline, color="red", width=2
+            )
+            line["id"] = n_wireline
 
 
 def update_item_list(window: sg.Window, items):
