@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from view.transform2d import transform2D
 from view.util import (
     redraw_when_zoom,
     update_item_list,
@@ -78,6 +79,15 @@ def open_window():
                     [
                         sg.Column(
                             [
+                                [
+                                    sg.Button(
+                                        "Transform",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-transform-",
+                                    )
+                                ],
                                 [
                                     sg.Button(
                                         "Zoom +",
@@ -170,8 +180,11 @@ def open_window():
     wireframe_tuples = []
     start_point = end_point = first_point = unfinished_line = None
 
+    transform_open = False
+
     # Create an event loop
     while True:
+
         event, values = window.read()
         # End program if user closes window
         if event == sg.WIN_CLOSED:
@@ -190,6 +203,9 @@ def open_window():
             drawing = False
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = first_point = None
+
+        if event == "-transform-" and transform_open is False:
+            transform2D(transform_open)
 
         if (
             event == "-zoom-in-"
