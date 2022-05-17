@@ -24,6 +24,7 @@ def open_window():
     point_index_gen = line_index_gen = wireframe_index_gen = 0
 
     button_size = (10, 1)
+    direction_button_size = (3, 1)
 
     pos = "-"
 
@@ -72,6 +73,50 @@ def open_window():
                                 ],
                             ],
                             vertical_alignment="top",
+                            element_justification="center",
+                            expand_y=True,
+                        )
+                    ],
+                    [
+                        sg.Column(
+                            [
+                                [
+                                    sg.Button(
+                                        "up",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-up-",
+                                    )
+                                ],
+                                [
+                                    sg.Button(
+                                        "left",
+                                        size=direction_button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-left-",
+                                    ),
+                                    sg.Button(
+                                        "right",
+                                        size=direction_button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-right-",
+                                    ),
+                                ],
+                                [
+                                    sg.Button(
+                                        "down",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-down-",
+                                    ),
+                                ],
+                            ],
+                            vertical_alignment="top",
+                            element_justification="center",
                             expand_y=True,
                         )
                     ],
@@ -110,6 +155,7 @@ def open_window():
                     ],
                 ],
                 expand_y=True,
+                element_justification="center",
                 k="-buttons-",
             ),
             sg.Column(
@@ -257,6 +303,19 @@ def open_window():
             id_comp_axis = draw_graph_axis_and_ticks(
                 viewport, viewport_x, viewport_y, viewport_step
             )
+
+        if all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True:
+            if event == "-up-" and viewport_y <= default_top_right[1]:
+                print("up")
+
+            if event == "-down-" and viewport_y >= default_bottom_left[1]:
+                print("down")
+
+            if event == "-left-" and viewport_x >= default_top_right[0]:
+                print("left")
+
+            if event == "-right-" and viewport_x <= default_bottom_left[0]:
+                print("right")
 
         if event in [
             "-select-",
