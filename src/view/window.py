@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 from enums.obj_type import Obj_type
 from view.file_reader import fileReader
+from view.transform2d import transform2D
 from view.util import (
     draw_list,
     redraw_figures,
@@ -67,9 +68,11 @@ def main_window():
     start_point = end_point = first_point = unfinished_line = None
 
     angle = None
+    transform_open = False
 
     """Creating an event loop"""
     while True:
+
         event, values = window.read()
 
         """End program if user closes window"""
@@ -99,6 +102,9 @@ def main_window():
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = first_point = None
 
+	if event == "-transform-" and transform_open is False:
+            transform2D(transform_open)
+
         if event == "-inpangle-":
             try:
                 val = int(values[event])
@@ -114,7 +120,6 @@ def main_window():
             new_tr, new_bl = rotate_viewport(viewport, top_right, bottom_left, angle)
             top_right = new_tr
             bottom_left = new_bl
-
             for line in id_comp_axis:
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
