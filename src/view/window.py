@@ -102,8 +102,8 @@ def main_window():
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = first_point = None
 
-	if event == "-transform-" and transform_open is False:
-            transform2D(transform_open)
+        if event == "Transform" and transform_open is False:
+            transform2D(transform_open, values["-itemlist-"])
 
         if event == "-inpangle-":
             try:
