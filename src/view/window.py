@@ -170,6 +170,7 @@ def open_window():
                             enable_events=True,
                             drag_submits=True,
                             motion_events=True,
+                            change_submits=True,
                             k="-viewport-",
                         )
                     ],
@@ -201,9 +202,8 @@ def open_window():
 
     viewport: sg.Graph = window["-viewport-"]
     viewport.bind("<Button-1>", "+LEFT")
-    viewport.bind("<Button-4>", "-WHEEL")
-    viewport.bind("<Button-5>", "+WHEEL")
-    # viewport.bind("<MouseWheel>", "-WHEEL")
+    viewport.bind("<Control-Button-4>", "+ZOOM")
+    viewport.bind("<Control-Button-5>", "-ZOOM")
 
     # drawing vp line
     id_comp_axis = draw_graph_axis_and_ticks(
@@ -240,6 +240,7 @@ def open_window():
 
         if (
             event == "-zoom-in-"
+            or event.endswith("+ZOOM")
             and all(
                 x > y for x, y in zip(viewport_size, (viewport_step, viewport_step))
             )
@@ -267,7 +268,8 @@ def open_window():
                 redraw_figures(viewport, figure)
 
         if (
-            event == "-zoom-out-"
+            event in "-zoom-out-"
+            or event.endswith("-ZOOM")
             and all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True
         ):
             """Event to zoom out the viewport"""
