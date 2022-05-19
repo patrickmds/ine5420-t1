@@ -307,6 +307,7 @@ def open_window():
             )
 
         if all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True:
+            """Validate if its in zoom"""
             semi_step = viewport_step // 2
             if (
                 event == "-up-"
@@ -436,7 +437,9 @@ def open_window():
                     unfinished_line = line
 
             if active_button == "-wireframe-":
+                """Event to plot a wireframe"""
                 if event.endswith("+LEFT") and not drawing:
+                    """Start drawing a wireframe"""
                     if vertex_number == 0:
                         first_point = x, y
                     start_point = x, y
@@ -453,6 +456,7 @@ def open_window():
                     and drawing
                     and vertex_number > 2
                 ):
+                    """End drawing a wireframe"""
                     end_point = (x, y)
                     viewport.delete_figure(line)
                     wire_line = viewport.draw_line(
@@ -482,6 +486,7 @@ def open_window():
                     and not is_close_enough(first_point, (x, y))
                     and drawing
                 ):
+                    """Event while drawing a wireframe and is not close enough of the first point"""
                     end_point = x, y
                     viewport.delete_figure(line)
                     wire_line = viewport.draw_line(
@@ -494,6 +499,7 @@ def open_window():
                     start_point = end_point
                     vertex_number += 1
                 elif drawing:
+                    """Event while drawing a wireframe"""
                     lastxy = x, y
                     viewport.delete_figure(line)
                     line = viewport.draw_line(
