@@ -25,7 +25,7 @@ def redraw_figures(viewport: sg.Graph, figure):
 
 def update_item_list(window: sg.Window, items):
     values = [it["name"] for it in items]
-    window.find_element("-itemlist-").update(values=values)
+    window.find_element("-itemlist-").update(values)
 
 
 def draw_graph_axis_and_ticks(viewport: sg.Graph, top_right, bottom_left, step):

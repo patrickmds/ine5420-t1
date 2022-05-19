@@ -327,19 +327,19 @@ def open_window():
 
             if (
                 event == "-left-"
+                and viewport_x >= default_bottom_left[0]
+                and bottom_left[0] - semi_step >= default_bottom_left[0]
+            ):
+                top_right = (top_right[0] - semi_step, top_right[1])
+                bottom_left = (bottom_left[0] - semi_step, bottom_left[1])
+
+            if (
+                event == "-right-"
                 and viewport_x <= default_top_right[0]
                 and top_right[0] + semi_step <= default_top_right[0]
             ):
                 top_right = (top_right[0] + semi_step, top_right[1])
                 bottom_left = (bottom_left[0] + semi_step, bottom_left[1])
-
-            if (
-                event == "-right-"
-                and viewport_x >= default_bottom_left[0]
-                and top_right[0] - semi_step >= default_bottom_left[0]
-            ):
-                top_right = (top_right[0] - semi_step, top_right[1])
-                bottom_left = (bottom_left[0] - semi_step, bottom_left[1])
 
             for line in id_comp_axis:
                 viewport.delete_figure(line)
@@ -362,6 +362,7 @@ def open_window():
 
         if event == "Delete":
             """Event to delete elements from sidelist"""
+            print(items)
             for item in items:
                 if item["name"] in values["-itemlist-"]:
                     if item["type"] == "wireframe":
@@ -370,6 +371,7 @@ def open_window():
                     else:
                         viewport.delete_figure(item["id"])
                     items.remove(item)
+            viewport.update()
             update_item_list(window, items)
 
         if event.startswith("-viewport-"):
@@ -430,7 +432,7 @@ def open_window():
                 elif drawing:
                     """Event while drawing a line"""
                     lastxy = x, y
-                    viewport.delete_figure(line)
+                    viewport.delete_figure(unfinished_line)
                     line = viewport.draw_line(
                         start_point, lastxy, color="blue", width=2
                     )
@@ -458,13 +460,13 @@ def open_window():
                 ):
                     """End drawing a wireframe"""
                     end_point = (x, y)
-                    viewport.delete_figure(line)
+                    viewport.delete_figure(unfinished_line)
                     wire_line = viewport.draw_line(
                         start_point, first_point, color="red", width=2
                     )
                     line_ids.append(wire_line)
                     wireframe_tuples.append(
-                        {"id": wire_line, "start": start_point, "end": end_point}
+                        {"id": wire_line, "start": start_point, "end": first_point}
                     )
                     drawing = False
                     wireframe_index_gen += 1
@@ -488,7 +490,7 @@ def open_window():
                 ):
                     """Event while drawing a wireframe and is not close enough of the first point"""
                     end_point = x, y
-                    viewport.delete_figure(line)
+                    viewport.delete_figure(unfinished_line)
                     wire_line = viewport.draw_line(
                         start_point, end_point, color="red", width=2
                     )
@@ -501,7 +503,7 @@ def open_window():
                 elif drawing:
                     """Event while drawing a wireframe"""
                     lastxy = x, y
-                    viewport.delete_figure(line)
+                    viewport.delete_figure(unfinished_line)
                     line = viewport.draw_line(
                         start_point, lastxy, color="blue", width=2
                     )
