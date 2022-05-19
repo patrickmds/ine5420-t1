@@ -5,9 +5,10 @@ from view.util import (
     draw_graph_axis_and_ticks,
     is_close_enough,
 )
+from view.main_window_layout import createMainLayout
 
 
-def open_window():
+def main_window():
     sg.theme("dark grey 9")
 
     active_button = "-select-"
@@ -28,184 +29,30 @@ def open_window():
 
     pos = "-"
 
-    layout = [
-        [
-            sg.Column(
-                [
-                    [
-                        sg.Column(
-                            [
-                                [
-                                    sg.Button(
-                                        "Select",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-select-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "Point",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-point-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "Line",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-line-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "Wireframe",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-wireframe-",
-                                    )
-                                ],
-                            ],
-                            vertical_alignment="top",
-                            element_justification="center",
-                            expand_y=True,
-                        )
-                    ],
-                    [
-                        sg.Column(
-                            [
-                                [
-                                    sg.Button(
-                                        "up",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-up-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "left",
-                                        size=direction_button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-left-",
-                                    ),
-                                    sg.Button(
-                                        "right",
-                                        size=direction_button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-right-",
-                                    ),
-                                ],
-                                [
-                                    sg.Button(
-                                        "down",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-down-",
-                                    ),
-                                ],
-                            ],
-                            vertical_alignment="top",
-                            element_justification="center",
-                            expand_y=True,
-                        )
-                    ],
-                    [
-                        sg.Column(
-                            [
-                                [
-                                    sg.Button(
-                                        "Zoom +",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-zoom-in-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "Zoom -",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-zoom-out-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
-                                        "Reset",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-reset-",
-                                    ),
-                                ],
-                            ],
-                        )
-                    ],
-                ],
-                expand_y=True,
-                element_justification="center",
-                k="-buttons-",
-            ),
-            sg.Column(
-                [
-                    [
-                        sg.Graph(
-                            canvas_size=viewport_size,
-                            graph_bottom_left=bottom_left,
-                            graph_top_right=top_right,
-                            background_color="white",
-                            border_width=1,
-                            enable_events=True,
-                            drag_submits=True,
-                            motion_events=True,
-                            k="-viewport-",
-                        )
-                    ],
-                    [sg.Text(text=pos, k="-pos-")],
-                ],
-            ),
-            sg.Column(
-                [
-                    [
-                        sg.Listbox(
-                            values=items,
-                            select_mode=sg.SELECT_MODE_SINGLE,
-                            size=(20, 40),
-                            enable_events=True,
-                            right_click_menu=["&Right", ["Delete"]],
-                            k="-itemlist-",
-                        )
-                    ]
-                ],
-                vertical_alignment="t",
-            ),
-        ],
-    ]
+    layout = createMainLayout(
+        items,
+        pos,
+        viewport_size,
+        bottom_left,
+        top_right,
+        button_size,
+        direction_button_size,
+    )
 
-    # Create the window
-    window = sg.Window("CG", layout, use_default_focus=False, finalize=True)
+    """Create the window"""
+    window = sg.Window("IGC", layout, use_default_focus=False, finalize=True)
 
+    """Set the active button color"""
     window.find_element(active_button).update(button_color="yellow")
 
     viewport: sg.Graph = window["-viewport-"]
+
+    """Binding mouse and keyboard actions to use as events"""
     viewport.bind("<Button-1>", "+LEFT")
     viewport.bind("<Button-4>", "-WHEEL")
     viewport.bind("<Button-5>", "+WHEEL")
-    # viewport.bind("<MouseWheel>", "-WHEEL")
 
-    # drawing vp line
+    """drawing vp line"""
     id_comp_axis = draw_graph_axis_and_ticks(
         viewport, top_right, bottom_left, viewport_step
     )
@@ -216,20 +63,20 @@ def open_window():
     wireframe_tuples = []
     start_point = end_point = unfinished_line = None
 
-    # Create an event loop
+    """Creating an event loop"""
     while True:
         event, values = window.read()
 
-        # End program if user closes window
+        """End program if user closes window"""
         if event == sg.WIN_CLOSED:
             break
 
+        """Removing unfinished draws"""
         if (
             event.startswith("-viewport-") is False
             and active_button in ["-line-", "-wireframe-"]
             and unfinished_line is not None
         ):
-            """Removing unfinished draws"""
             viewport.delete_figure(unfinished_line)
             for line in wireframe_tuples:
                 viewport.delete_figure(line["id"])
@@ -238,6 +85,7 @@ def open_window():
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = None
 
+        """Event to zoom in the viewport"""
         if (
             event == "-zoom-in-"
             and all(
@@ -245,7 +93,6 @@ def open_window():
             )
             is True
         ):
-            """Event to zoom in the viewport"""
             viewport_size = (
                 viewport_size[0] - viewport_step,
                 viewport_size[1] - viewport_step,
@@ -266,11 +113,11 @@ def open_window():
             for figure in items:
                 redraw_figures(viewport, figure)
 
+        """Event to zoom out the viewport"""
         if (
             event == "-zoom-out-"
             and all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True
         ):
-            """Event to zoom out the viewport"""
             viewport_size = (
                 viewport_size[0] + viewport_step,
                 viewport_size[1] + viewport_step,
@@ -291,8 +138,8 @@ def open_window():
             for figure in items:
                 redraw_figures(viewport, figure)
 
+        """Event to reset the viewport"""
         if event == "-reset-":
-            """Event to reset the viewport"""
             items = []
             update_item_list(window, items)
             viewport.erase()
@@ -306,8 +153,8 @@ def open_window():
                 viewport, top_right, bottom_left, viewport_step
             )
 
+        """Event to move the viewport (if its possible)"""
         if all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True:
-            """Validate if its in zoom"""
             semi_step = viewport_step // 2
             if (
                 event == "-up-"
@@ -360,8 +207,8 @@ def open_window():
             active_button = event
             window.find_element(active_button).update(button_color="yellow")
 
+        """Event to delete elements from sidelist"""
         if event == "Delete":
-            """Event to delete elements from sidelist"""
             print(items)
             for item in items:
                 if item["name"] in values["-itemlist-"]:
@@ -374,15 +221,15 @@ def open_window():
             viewport.update()
             update_item_list(window, items)
 
+        """To handle events ocurring inside viewport"""
         if event.startswith("-viewport-"):
-            """Event ocurring inside viewport"""
             x, y = values["-viewport-"]
 
             pos = f"({x}, {y})"
             window.find_element("-pos-").update(pos)
 
+            """Event to plot a point from mouse click"""
             if active_button == "-point-" and event.endswith("+LEFT"):
-                """Event to plot a point from mouse click"""
                 point = viewport.draw_point((x, y), color="red")
                 point_index_gen += 1
                 items.append(
@@ -396,8 +243,8 @@ def open_window():
                 )
                 update_item_list(window, items)
 
+            """Event to plot a line"""
             if active_button == "-line-":
-                """Event to plot a line"""
                 if event.endswith("+LEFT") and not drawing:
                     """Start drawing a line"""
                     start_point = (x, y)
@@ -438,8 +285,8 @@ def open_window():
                     )
                     unfinished_line = line
 
+            """Event to plot a wireframe"""
             if active_button == "-wireframe-":
-                """Event to plot a wireframe"""
                 if event.endswith("+LEFT") and not drawing:
                     """Start drawing a wireframe"""
                     if vertex_number == 0:
