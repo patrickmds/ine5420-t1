@@ -81,15 +81,6 @@ def open_window():
                             [
                                 [
                                     sg.Button(
-                                        "Transform",
-                                        size=button_size,
-                                        button_color="white",
-                                        enable_events=True,
-                                        k="-transform-",
-                                    )
-                                ],
-                                [
-                                    sg.Button(
                                         "Zoom +",
                                         size=button_size,
                                         button_color="white",
@@ -148,7 +139,7 @@ def open_window():
                             select_mode=sg.SELECT_MODE_SINGLE,
                             size=(20, 40),
                             enable_events=True,
-                            right_click_menu=["&Right", ["Delete"]],
+                            right_click_menu=["&Right", ["Transform", "Delete"]],
                             k="-itemlist-",
                         )
                     ]
@@ -204,8 +195,8 @@ def open_window():
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = first_point = None
 
-        if event == "-transform-" and transform_open is False:
-            transform2D(transform_open)
+        if event == "Transform" and transform_open is False:
+            transform2D(transform_open, values["-itemlist-"])
 
         if (
             event == "-zoom-in-"
