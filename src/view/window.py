@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 from view.util import (
-    redraw_when_zoom,
+    redraw_figures,
     update_item_list,
     draw_graph_axis_and_ticks,
     is_close_enough,
@@ -207,7 +207,7 @@ def open_window():
 
     # drawing vp line
     id_comp_axis = draw_graph_axis_and_ticks(
-        viewport, viewport_x, viewport_y, viewport_step
+        viewport, top_right, bottom_left, viewport_step
     )
 
     drawing = False
@@ -261,10 +261,10 @@ def open_window():
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
             id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, viewport_x, viewport_y, viewport_step
+                viewport, top_right, bottom_left, viewport_step
             )
             for figure in items:
-                redraw_when_zoom(viewport, figure)
+                redraw_figures(viewport, figure)
 
         if (
             event == "-zoom-out-"
@@ -286,10 +286,10 @@ def open_window():
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
             id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, viewport_x, viewport_y, viewport_step
+                viewport, top_right, bottom_left, viewport_step
             )
             for figure in items:
-                redraw_when_zoom(viewport, figure)
+                redraw_figures(viewport, figure)
 
         if event == "-reset-":
             """Event to reset the viewport"""
@@ -300,22 +300,54 @@ def open_window():
             viewport_size = viewport_default_size
             viewport_x = viewport_default_x
             viewport_y = viewport_default_y
+            top_right = default_top_right
+            bottom_left = default_bottom_left
             id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, viewport_x, viewport_y, viewport_step
+                viewport, top_right, bottom_left, viewport_step
             )
 
         if all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True:
-            if event == "-up-" and viewport_y <= default_top_right[1]:
-                print("up")
+            semi_step = viewport_step // 2
+            if (
+                event == "-up-"
+                and viewport_y <= default_top_right[1]
+                and top_right[1] + semi_step <= default_top_right[1]
+            ):
+                top_right = (top_right[0], top_right[1] + semi_step)
+                bottom_left = (bottom_left[0], bottom_left[1] + semi_step)
 
-            if event == "-down-" and viewport_y >= default_bottom_left[1]:
-                print("down")
+            if (
+                event == "-down-"
+                and viewport_y >= default_bottom_left[1]
+                and bottom_left[1] - semi_step >= default_bottom_left[1]
+            ):
+                top_right = (top_right[0], top_right[1] - semi_step)
+                bottom_left = (bottom_left[0], bottom_left[1] - semi_step)
 
-            if event == "-left-" and viewport_x >= default_top_right[0]:
-                print("left")
+            if (
+                event == "-left-"
+                and viewport_x <= default_top_right[0]
+                and top_right[0] + semi_step <= default_top_right[0]
+            ):
+                top_right = (top_right[0] + semi_step, top_right[1])
+                bottom_left = (bottom_left[0] + semi_step, bottom_left[1])
 
-            if event == "-right-" and viewport_x <= default_bottom_left[0]:
-                print("right")
+            if (
+                event == "-right-"
+                and viewport_x >= default_bottom_left[0]
+                and top_right[0] - semi_step >= default_bottom_left[0]
+            ):
+                top_right = (top_right[0] - semi_step, top_right[1])
+                bottom_left = (bottom_left[0] - semi_step, bottom_left[1])
+
+            for line in id_comp_axis:
+                viewport.delete_figure(line)
+            viewport.change_coordinates(bottom_left, top_right)
+            id_comp_axis = draw_graph_axis_and_ticks(
+                viewport, top_right, bottom_left, viewport_step
+            )
+            for figure in items:
+                redraw_figures(viewport, figure)
 
         if event in [
             "-select-",
