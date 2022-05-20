@@ -1,7 +1,8 @@
 import PySimpleGUI as sg
+import numpy as np
 
 
-def redraw_when_zoom(viewport: sg.Graph, figure):
+def redraw_figures(viewport: sg.Graph, figure):
     type = figure["type"]
     if type == "point":
         viewport.delete_figure(figure["id"])
@@ -16,40 +17,33 @@ def redraw_when_zoom(viewport: sg.Graph, figure):
 
     elif type == "wireframe":
         lines = figure["lines"]
+        new_ids = []
         for line in lines:
             start, end = line["start"], line["end"]
             viewport.delete_figure(line["id"])
             n_line = viewport.draw_line(start, end, color="red", width=2)
             line["id"] = n_line
+            new_ids.append(n_line)
+        figure["id"] = new_ids
 
 
 def update_item_list(window: sg.Window, items):
     values = [it["name"] for it in items]
-    window.find_element("-itemlist-").update(values=values)
+    window.find_element("-itemlist-").update(values)
 
 
-def draw_graph_axis_and_ticks(viewport: sg.Graph, viewport_x, viewport_y, step):
-    min_x = -viewport_x
-    max_x = viewport_x
-
-    min_y = -viewport_y
-    max_y = viewport_y
-
+def draw_graph_axis_and_ticks(viewport: sg.Graph, top_right, bottom_left, step):
     id_comp_axis = []
 
-    xaxis = viewport.draw_line((min_x, 0), (max_x, 0), color="lightgray")
-    yaxis = viewport.draw_line((0, min_y), (0, max_y), color="lightgray")
+    xaxis = viewport.draw_line(
+        (bottom_left[0], 0), (top_right[0], 0), color="lightgray"
+    )
+    yaxis = viewport.draw_line(
+        (0, bottom_left[1]), (0, top_right[1]), color="lightgray"
+    )
 
     id_comp_axis.append(xaxis)
     id_comp_axis.append(yaxis)
-
-    for x in range(min_x, max_x + 1, step):
-        xline = viewport.draw_line((x, -3), (x, 3), color="lightgray")
-        id_comp_axis.append(xline)
-
-    for y in range(min_y, max_y + 1, step):
-        yline = viewport.draw_line((-3, y), (3, y), color="lightgray")
-        id_comp_axis.append(yline)
 
     return id_comp_axis
 
@@ -59,3 +53,21 @@ def is_close_enough(first_point, second_point):
         abs(first_point[0] - second_point[0]) < 5
         and abs(first_point[1] - second_point[1]) < 5
     )
+
+
+def translate(Dx, Dy):
+    translattion_matrix = np.array([[1, 0, 0], [0, 1, 0], [Dx, Dy, 1]])
+    return translattion_matrix
+
+
+def scale(Sx, Sy):
+    scaling_matrix = np.array([[Sx, 0, 0], [0, Sy, 0], [0, 0, 1]])
+    return scaling_matrix
+
+
+def rotate(angle: float):
+    angle_in_radians = np.radians(-angle)
+    cos = np.cos(angle_in_radians)
+    sin = np.sin(angle_in_radians)
+    rotation_matrix = np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
+    return rotation_matrix
