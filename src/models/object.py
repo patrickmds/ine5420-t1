@@ -27,14 +27,19 @@ class DObject:
         }
 
     def draw_line(self, viewport):
-        line = viewport.draw_line(self.vertexes[0], self.vertexes[1], color="red", width=2)
-        return {
-            "name": self.name,
-            "id": line,
-            "type": "line",
-            "x": self.vertexes[0],
-            "y": self.vertexes[1],
-        }
+        lines = []
+        for v in range(len(self.vertexes)):
+            if v == 0:
+                continue
+            line = viewport.draw_line(self.vertexes[v-1], self.vertexes[v], color="red", width=2)
+            lines.append({
+                "name": self.name + ('' if v==1 else str(v-1)),
+                "id": line,
+                "type": "line",
+                "x": self.vertexes[v-1],
+                "y": self.vertexes[v],
+            })
+        return lines
 
     def draw_wireframe(self, viewport):
         pass

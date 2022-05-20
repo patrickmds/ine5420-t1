@@ -8,7 +8,11 @@ def draw_list(objects, viewport, items):
         if obj.obj_type == Obj_type.WIREFRAME or obj.obj_type == Obj_type.WORLD:
             continue
         drawn = obj.draw(viewport)
-        items.append(drawn)
+        if (isinstance(drawn, list)):
+            for d in drawn:
+                items.append(d)
+        else:
+            items.append(drawn)
 
 def redraw_figures(viewport: sg.Graph, figure):
     type = figure["type"]
