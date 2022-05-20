@@ -4,9 +4,12 @@ from enums.obj_type import Obj_type
 
 
 def draw_list(objects, viewport, items):
+    world_changes = None
     for obj in objects:
         if obj.obj_type == Obj_type.WORLD:
-            obj.draw(viewport)
+            world_changes = obj.draw(viewport)
+            for item in items:
+                redraw_figures(viewport, item)
             continue
         drawn = obj.draw(viewport)
         if isinstance(drawn, list):
@@ -14,6 +17,7 @@ def draw_list(objects, viewport, items):
                 items.append(d)
         else:
             items.append(drawn)
+    return world_changes
 
 
 def redraw_figures(viewport: sg.Graph, figure):

@@ -17,7 +17,7 @@ def main_window():
 
     active_button = "-select-"
 
-    viewport_step = 50
+    minimun_viewport_size = 50
     viewport_size = viewport_default_size = (600, 600)
     viewport_x = viewport_default_x = viewport_size[0] // 2
     viewport_y = viewport_default_y = viewport_size[1] // 2
@@ -76,7 +76,9 @@ def main_window():
             filepath = fileReader()
             if filepath is not None:
                 objects = Reader().read_file(filepath)
-                draw_list(objects, viewport, items)
+                world_changes = draw_list(objects, viewport, items)
+                if (world_changes):
+                    viewport_size, top_right, bottom_left = world_changes
                 update_item_list(window, items)
 
         """Removing unfinished draws"""
@@ -98,13 +100,13 @@ def main_window():
             event == "-zoom-in-"
             or event.endswith("+ZOOM")
             and all(
-                x > y for x, y in zip(viewport_size, (viewport_step, viewport_step))
+                x > y for x, y in zip(viewport_size, (minimun_viewport_size, minimun_viewport_size))
             )
             is True
         ):
             viewport_size = (
-                viewport_size[0] - viewport_step,
-                viewport_size[1] - viewport_step,
+                viewport_size[0]*0.90,
+                viewport_size[1]*0.90,
             )
 
             viewport_x = viewport_size[0] // 2
@@ -123,8 +125,8 @@ def main_window():
         """Event to zoom out the viewport"""
         if event == "-zoom-out-" or event.endswith("-ZOOM"):
             viewport_size = (
-                viewport_size[0] + viewport_step,
-                viewport_size[1] + viewport_step,
+                viewport_size[0]*1.10,
+                viewport_size[1]*1.10,
             )
 
             viewport_x = viewport_size[0] // 2
@@ -155,22 +157,22 @@ def main_window():
 
         """Event to move the viewport (if its possible)"""
         if event in ["-up-", "-down-", "-left-", "-right-"]:
-            semi_step = viewport_step // 2
+            step = minimun_viewport_size // 2
             if event == "-up-":
-                top_right = (top_right[0], top_right[1] + semi_step)
-                bottom_left = (bottom_left[0], bottom_left[1] + semi_step)
+                top_right = (top_right[0], top_right[1] + step)
+                bottom_left = (bottom_left[0], bottom_left[1] + step)
 
             if event == "-down-":
-                top_right = (top_right[0], top_right[1] - semi_step)
-                bottom_left = (bottom_left[0], bottom_left[1] - semi_step)
+                top_right = (top_right[0], top_right[1] - step)
+                bottom_left = (bottom_left[0], bottom_left[1] - step)
 
             if event == "-left-":
-                top_right = (top_right[0] - semi_step, top_right[1])
-                bottom_left = (bottom_left[0] - semi_step, bottom_left[1])
+                top_right = (top_right[0] - step, top_right[1])
+                bottom_left = (bottom_left[0] - step, bottom_left[1])
 
             if event == "-right-":
-                top_right = (top_right[0] + semi_step, top_right[1])
-                bottom_left = (bottom_left[0] + semi_step, bottom_left[1])
+                top_right = (top_right[0] + step, top_right[1])
+                bottom_left = (bottom_left[0] + step, bottom_left[1])
 
             for line in id_comp_axis:
                 viewport.delete_figure(line)
