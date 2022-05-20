@@ -16,8 +16,8 @@ class Reader:
         for index, line in enumerate(open_file):
             if line[0] != "v":
                 continue
-            _, x, y, z = line.strip("\n").split(" ")
-            vertex_list.append((index + 1, x, y, z))
+            _, x, y, z = line.strip('\n').split(' ')
+            vertex_list.append((float(x), float(y), float(z)))
         return vertex_list
 
     def read_objects(self, open_file):
@@ -38,7 +38,7 @@ class Reader:
                     continue
                 obj_type, *edges = line.strip("\n").split(" ")
                 current_obj.obj_type = Obj_type(obj_type)
-                current_obj.vertexes = edges
+                current_obj.vertexes = [vertexes[int(i)-1] for i in edges]
                 reading = False
                 objects.append(current_obj)
         return objects

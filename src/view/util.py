@@ -1,6 +1,14 @@
 import PySimpleGUI as sg
 import numpy as np
+from enums.obj_type import Obj_type
 
+
+def draw_list(objects, viewport, items):
+    for obj in objects:
+        if obj.obj_type == Obj_type.WIREFRAME or obj.obj_type == Obj_type.WORLD:
+            continue
+        drawn = obj.draw(viewport)
+        items.append(drawn)
 
 def redraw_figures(viewport: sg.Graph, figure):
     type = figure["type"]
