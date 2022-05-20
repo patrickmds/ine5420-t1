@@ -6,6 +6,7 @@ from enums.obj_type import Obj_type
 def draw_list(objects, viewport, items):
     for obj in objects:
         if obj.obj_type == Obj_type.WORLD:
+            obj.draw(viewport)
             continue
         drawn = obj.draw(viewport)
         if isinstance(drawn, list):

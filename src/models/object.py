@@ -15,7 +15,9 @@ class DObject:
             return self.draw_line(viewport)
         if self.obj_type == Obj_type.WIREFRAME:
             return self.draw_wireframe(viewport)
-
+        if self.obj_type == Obj_type.WORLD:
+            return self.draw_world(viewport)
+    
     def draw_point(self, viewport):
         x, y, _ = self.vertexes[0]
         point = viewport.draw_point((x, y), color="red")
@@ -81,3 +83,6 @@ class DObject:
             "type": "wireframe",
             "lines": wireframe_tuples,
         }
+
+    def draw_world(self, viewport):
+        result = viewport.change_coordinates(self.vertexes[0], self.vertexes[1])

@@ -176,7 +176,7 @@ def main_window():
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
             id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, top_right, bottom_left, viewport_step
+                viewport, top_right, bottom_left
             )
             for figure in items:
                 redraw_figures(viewport, figure)
