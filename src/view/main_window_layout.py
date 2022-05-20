@@ -12,11 +12,6 @@ def createMainLayout(
 ):
     return [
         [
-            sg.Menu(
-                [["&Help"]],
-            )
-        ],
-        [
             sg.Column(
                 [
                     [
