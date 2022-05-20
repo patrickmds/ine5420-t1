@@ -3,7 +3,7 @@ import numpy as np
 from enums.obj_type import Obj_type
 
 
-def draw_list(objects, viewport, items):
+def draw_list(objects, viewport: sg.Graph, items):
     for obj in objects:
         if obj.obj_type == Obj_type.WORLD:
             obj.draw(viewport)
@@ -79,9 +79,21 @@ def scale(Sx, Sy):
     return scaling_matrix
 
 
-def rotate(angle: float):
+def rotate(angle: int):
     angle_in_radians = np.radians(-angle)
     cos = np.cos(angle_in_radians)
     sin = np.sin(angle_in_radians)
     rotation_matrix = np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
     return rotation_matrix
+
+
+def rotate_viewport(viewport: sg.Graph, top_right, bottom_left, angle: int):
+    rotation_matrix = rotate(angle)
+
+    aux_tr = np.array([top_right[0], top_right[1], 1])
+    aux_bl = np.array([bottom_left[0], bottom_left[1], 1])
+
+    new_tr = np.matmul(aux_tr, rotation_matrix)
+    new_bl = np.matmul(aux_bl, rotation_matrix)
+
+    return (new_tr[0], new_tr[1]), (new_bl[0], new_bl[1])

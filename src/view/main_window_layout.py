@@ -64,6 +64,32 @@ def createMainLayout(
                         sg.Column(
                             [
                                 [
+                                    sg.Input(
+                                        size=button_size,
+                                        enable_events=True,
+                                        k="-inpangle-",
+                                    ),
+                                    sg.Text("º"),
+                                ],
+                                [
+                                    sg.Button(
+                                        "Rotate",
+                                        size=button_size,
+                                        button_color="white",
+                                        enable_events=True,
+                                        k="-rotate-",
+                                    )
+                                ],
+                            ],
+                            vertical_alignment="top",
+                            element_justification="center",
+                            expand_y=True,
+                        )
+                    ],
+                    [
+                        sg.Column(
+                            [
+                                [
                                     sg.Button(
                                         "up",
                                         size=button_size,

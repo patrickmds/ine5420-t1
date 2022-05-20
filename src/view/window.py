@@ -4,6 +4,7 @@ from view.file_reader import fileReader
 from view.util import (
     draw_list,
     redraw_figures,
+    rotate_viewport,
     update_item_list,
     draw_graph_axis_and_ticks,
     is_close_enough,
@@ -65,6 +66,8 @@ def main_window():
     wireframe_tuples = []
     start_point = end_point = unfinished_line = None
 
+    angle = None
+
     """Creating an event loop"""
     while True:
         event, values = window.read()
@@ -92,6 +95,29 @@ def main_window():
             drawing = False
             wireframe_tuples = line_ids = []
             start_point = end_point = lastxy = unfinished_line = None
+
+        if event == "-inpangle-":
+            try:
+                val = int(values[event])
+                angle = val
+                window.find_element(event).update(values[event])
+            except Exception:
+                print(
+                    'Bad entry for input: "%s". Expecting only numbers (int)'
+                    % values[event]
+                )
+
+        if event == "-rotate-" and angle is not None and angle != "":
+            new_tr, new_bl = rotate_viewport(viewport, top_right, bottom_left, angle)
+            top_right = new_tr
+            bottom_left = new_bl
+
+            for line in id_comp_axis:
+                viewport.delete_figure(line)
+            viewport.change_coordinates(bottom_left, top_right)
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
+            for figure in items:
+                redraw_figures(viewport, figure)
 
         """Event to zoom in the viewport"""
         if (
@@ -175,9 +201,7 @@ def main_window():
             for line in id_comp_axis:
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
-            id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, top_right, bottom_left
-            )
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
             for figure in items:
                 redraw_figures(viewport, figure)
 
