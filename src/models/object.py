@@ -8,11 +8,11 @@ class DObject:
 
     def draw(self, viewport):
         if self.obj_type == Obj_type.POINT:
-            self.draw_point(viewport)
+            return self.draw_point(viewport)
         if self.obj_type == Obj_type.LINE:
-            self.draw_line(viewport)
+            return self.draw_line(viewport)
         if self.obj_type == Obj_type.WIREFRAME:
-            self.draw_wireframe(viewport)
+            return self.draw_wireframe(viewport)
     
     def draw_point(self, viewport):
         x, y, _ = self.vertexes[0]
