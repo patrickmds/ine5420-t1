@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+import numpy as np
 
 
 def redraw_figures(viewport: sg.Graph, figure):
@@ -49,3 +50,21 @@ def is_close_enough(first_point, second_point):
         abs(first_point[0] - second_point[0]) < 5
         and abs(first_point[1] - second_point[1]) < 5
     )
+
+
+def translate(Dx, Dy):
+    translattion_matrix = np.array([[1, 0, 0], [0, 1, 0], [Dx, Dy, 1]])
+    return translattion_matrix
+
+
+def scale(Sx, Sy):
+    scaling_matrix = np.array([[Sx, 0, 0], [0, Sy, 0], [0, 0, 1]])
+    return scaling_matrix
+
+
+def rotate(angle: float):
+    angle_in_radians = np.radians(-angle)
+    cos = np.cos(angle_in_radians)
+    sin = np.sin(angle_in_radians)
+    rotation_matrix = np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
+    return rotation_matrix

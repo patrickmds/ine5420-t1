@@ -114,10 +114,7 @@ def main_window():
                 redraw_figures(viewport, figure)
 
         """Event to zoom out the viewport"""
-        if (
-            event == "-zoom-out-"
-            and all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True
-        ):
+        if event == "-zoom-out-":
             viewport_size = (
                 viewport_size[0] + viewport_step,
                 viewport_size[1] + viewport_step,
@@ -154,37 +151,21 @@ def main_window():
             )
 
         """Event to move the viewport (if its possible)"""
-        if all(x < y for x, y in zip(viewport_size, viewport_default_size)) is True:
+        if event in ["-up-", "-down-", "-left-", "-right-"]:
             semi_step = viewport_step // 2
-            if (
-                event == "-up-"
-                and viewport_y <= default_top_right[1]
-                and top_right[1] + semi_step <= default_top_right[1]
-            ):
+            if event == "-up-":
                 top_right = (top_right[0], top_right[1] + semi_step)
                 bottom_left = (bottom_left[0], bottom_left[1] + semi_step)
 
-            if (
-                event == "-down-"
-                and viewport_y >= default_bottom_left[1]
-                and bottom_left[1] - semi_step >= default_bottom_left[1]
-            ):
+            if event == "-down-":
                 top_right = (top_right[0], top_right[1] - semi_step)
                 bottom_left = (bottom_left[0], bottom_left[1] - semi_step)
 
-            if (
-                event == "-left-"
-                and viewport_x >= default_bottom_left[0]
-                and bottom_left[0] - semi_step >= default_bottom_left[0]
-            ):
+            if event == "-left-":
                 top_right = (top_right[0] - semi_step, top_right[1])
                 bottom_left = (bottom_left[0] - semi_step, bottom_left[1])
 
-            if (
-                event == "-right-"
-                and viewport_x <= default_top_right[0]
-                and top_right[0] + semi_step <= default_top_right[0]
-            ):
+            if event == "-right-":
                 top_right = (top_right[0] + semi_step, top_right[1])
                 bottom_left = (bottom_left[0] + semi_step, bottom_left[1])
 
