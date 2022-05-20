@@ -3,15 +3,16 @@ import numpy as np
 from enums.obj_type import Obj_type
 
 
-def draw_list(objects, viewport, items, wireframe_index):
+def draw_list(objects, viewport, items):
     for obj in objects:
         if obj.obj_type == Obj_type.WORLD:
             continue
         drawn = obj.draw(viewport)
-        print(drawn)
-        # drawn["name"] = f"wireframe_{wireframe_index}"
-        # wireframe_index += 1
-        items.append(drawn)
+        if isinstance(drawn, list):
+            for d in drawn:
+                items.append(d)
+        else:
+            items.append(drawn)
 
 
 def redraw_figures(viewport: sg.Graph, figure):

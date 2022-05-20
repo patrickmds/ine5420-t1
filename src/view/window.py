@@ -76,8 +76,8 @@ def main_window():
             filepath = fileReader()
             if filepath is not None:
                 objects = Reader().read_file(filepath)
-                draw_list(objects, viewport, items, wireframe_index_gen)
-                # update_item_list(window, items)
+                draw_list(objects, viewport, items)
+                update_item_list(window, items)
 
         """Removing unfinished draws"""
         if (
@@ -116,9 +116,7 @@ def main_window():
             for line in id_comp_axis:
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
-            id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, top_right, bottom_left, viewport_step
-            )
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
             for figure in items:
                 redraw_figures(viewport, figure)
 
@@ -138,9 +136,7 @@ def main_window():
             for line in id_comp_axis:
                 viewport.delete_figure(line)
             viewport.change_coordinates(bottom_left, top_right)
-            id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, top_right, bottom_left, viewport_step
-            )
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
             for figure in items:
                 redraw_figures(viewport, figure)
 
