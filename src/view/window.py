@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from view.file_reader import fileReader
 from view.util import (
     redraw_figures,
     update_item_list,
@@ -6,6 +7,7 @@ from view.util import (
     is_close_enough,
 )
 from view.main_window_layout import createMainLayout
+from models.reader import Reader
 
 
 def main_window():
@@ -69,7 +71,10 @@ def main_window():
             break
 
         if event == "Open":
-            break
+            filepath = fileReader()
+            if filepath is not None:
+                objects = Reader().read_file(filepath)
+                print(objects)
 
         """Removing unfinished draws"""
         if (

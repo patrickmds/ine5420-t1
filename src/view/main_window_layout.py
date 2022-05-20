@@ -11,7 +11,7 @@ def createMainLayout(
     direction_button_size,
 ):
     return [
-        [sg.Menu([["&File", ["&Open", "---", "&Exit"]]], k="-menu-")],
+        [sg.Menu([["&File", ["&Open", "---", "&Exit"]]])],
         [
             sg.Column(
                 [
