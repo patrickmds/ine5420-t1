@@ -49,8 +49,8 @@ def main_window():
 
     """Binding mouse and keyboard actions to use as events"""
     viewport.bind("<Button-1>", "+LEFT")
-    viewport.bind("<Button-4>", "-WHEEL")
-    viewport.bind("<Button-5>", "+WHEEL")
+    viewport.bind("<Control-Button-4>", "+ZOOM")
+    viewport.bind("<Control-Button-5>", "-ZOOM")
 
     """drawing vp line"""
     id_comp_axis = draw_graph_axis_and_ticks(
@@ -88,6 +88,7 @@ def main_window():
         """Event to zoom in the viewport"""
         if (
             event == "-zoom-in-"
+            or event.endswith("+ZOOM")
             and all(
                 x > y for x, y in zip(viewport_size, (viewport_step, viewport_step))
             )
@@ -114,7 +115,7 @@ def main_window():
                 redraw_figures(viewport, figure)
 
         """Event to zoom out the viewport"""
-        if event == "-zoom-out-":
+        if event == "-zoom-out-" or event.endswith("-ZOOM"):
             viewport_size = (
                 viewport_size[0] + viewport_step,
                 viewport_size[1] + viewport_step,
@@ -190,7 +191,6 @@ def main_window():
 
         """Event to delete elements from sidelist"""
         if event == "Delete":
-            print(items)
             for item in items:
                 if item["name"] in values["-itemlist-"]:
                     if item["type"] == "wireframe":
@@ -199,8 +199,8 @@ def main_window():
                     else:
                         viewport.delete_figure(item["id"])
                     items.remove(item)
-            viewport.update()
             update_item_list(window, items)
+            viewport.update()
 
         """To handle events ocurring inside viewport"""
         if event.startswith("-viewport-"):
@@ -268,6 +268,7 @@ def main_window():
 
             """Event to plot a wireframe"""
             if active_button == "-wireframe-":
+                """Event to plot a wireframe"""
                 if event.endswith("+LEFT") and not drawing:
                     """Start drawing a wireframe"""
                     if vertex_number == 0:

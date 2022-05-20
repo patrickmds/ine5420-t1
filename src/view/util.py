@@ -17,11 +17,14 @@ def redraw_figures(viewport: sg.Graph, figure):
 
     elif type == "wireframe":
         lines = figure["lines"]
+        new_ids = []
         for line in lines:
             start, end = line["start"], line["end"]
             viewport.delete_figure(line["id"])
             n_line = viewport.draw_line(start, end, color="red", width=2)
             line["id"] = n_line
+            new_ids.append(n_line)
+        figure["id"] = new_ids
 
 
 def update_item_list(window: sg.Window, items):
