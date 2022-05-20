@@ -1,7 +1,6 @@
-class dObject:
+class DObject:
     
-    def __init__(self, name, obj_type, vertex, lines):
+    def __init__(self, name, obj_type=None, vertexes=None):
         self.name = name
         self.obj_type = obj_type
-        self.vertex = vertex
-        self.lines = lines
+        self.vertexes = vertexes
