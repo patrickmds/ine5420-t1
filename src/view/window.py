@@ -53,9 +53,7 @@ def main_window():
     viewport.bind("<Control-Button-5>", "-ZOOM")
 
     """drawing vp line"""
-    id_comp_axis = draw_graph_axis_and_ticks(
-        viewport, top_right, bottom_left, viewport_step
-    )
+    id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
 
     drawing = False
     vertex_number = 0
@@ -66,9 +64,11 @@ def main_window():
     """Creating an event loop"""
     while True:
         event, values = window.read()
-
         """End program if user closes window"""
-        if event == sg.WIN_CLOSED:
+        if event == sg.WIN_CLOSED or event == "Exit":
+            break
+
+        if event == "Open":
             break
 
         """Removing unfinished draws"""

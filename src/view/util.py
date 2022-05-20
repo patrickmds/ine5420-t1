@@ -32,7 +32,7 @@ def update_item_list(window: sg.Window, items):
     window.find_element("-itemlist-").update(values)
 
 
-def draw_graph_axis_and_ticks(viewport: sg.Graph, top_right, bottom_left, step):
+def draw_graph_axis_and_ticks(viewport: sg.Graph, top_right, bottom_left):
     id_comp_axis = []
 
     xaxis = viewport.draw_line(
