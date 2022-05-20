@@ -151,9 +151,7 @@ def main_window():
             viewport_y = viewport_default_y
             top_right = default_top_right
             bottom_left = default_bottom_left
-            id_comp_axis = draw_graph_axis_and_ticks(
-                viewport, top_right, bottom_left, viewport_step
-            )
+            id_comp_axis = draw_graph_axis_and_ticks(viewport, top_right, bottom_left)
 
         """Event to move the viewport (if its possible)"""
         if event in ["-up-", "-down-", "-left-", "-right-"]:
