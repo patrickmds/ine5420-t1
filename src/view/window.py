@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from enums.obj_type import Obj_type
 from view.file_reader import fileReader
 from view.util import (
     draw_list,
@@ -75,8 +76,8 @@ def main_window():
             filepath = fileReader()
             if filepath is not None:
                 objects = Reader().read_file(filepath)
-                draw_list(objects, viewport, items)
-                update_item_list(window, items)
+                draw_list(objects, viewport, items, wireframe_index_gen)
+                # update_item_list(window, items)
 
         """Removing unfinished draws"""
         if (

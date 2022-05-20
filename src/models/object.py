@@ -1,6 +1,8 @@
+import numpy
 from enums.obj_type import Obj_type
+
+
 class DObject:
-    
     def __init__(self, name, obj_type=None, vertexes=None):
         self.name = name
         self.obj_type = obj_type
@@ -13,7 +15,7 @@ class DObject:
             self.draw_line(viewport)
         if self.obj_type == Obj_type.WIREFRAME:
             self.draw_wireframe(viewport)
-    
+
     def draw_point(self, viewport):
         x, y, _ = self.vertexes[0]
         point = viewport.draw_point((x, y), color="red")
@@ -27,7 +29,9 @@ class DObject:
         }
 
     def draw_line(self, viewport):
-        line = viewport.draw_line(self.vertexes[0], self.vertexes[1], color="red", width=2)
+        line = viewport.draw_line(
+            self.vertexes[0], self.vertexes[1], color="red", width=2
+        )
         return {
             "name": self.name,
             "id": line,
@@ -37,4 +41,35 @@ class DObject:
         }
 
     def draw_wireframe(self, viewport):
-        pass
+        line_ids = []
+        wireframe_tuples = []
+
+        for curr, nxt in zip(self.vertexes[0:], self.vertexes[1:]):
+            curr_x, curr_y, _ = curr
+            next_x, next_y, _ = nxt
+
+            start_point = (curr_x, curr_y)
+            end_point = (next_x, next_y)
+
+            wire_line = viewport.draw_line(start_point, end_point, color="red", width=2)
+            line_ids.append(wire_line)
+            wireframe_tuples.append(
+                {"id": wire_line, "start": start_point, "end": end_point}
+            )
+
+        sx, sy, _ = self.vertexes[0]
+        lx, ly, _ = self.vertexes[-1]
+        start_point = (lx, ly)
+        end_point = (sx, sy)
+
+        wire_line = viewport.draw_line(start_point, end_point, color="red", width=2)
+        line_ids.append(wire_line)
+        wireframe_tuples.append(
+            {"id": wire_line, "start": start_point, "end": end_point}
+        )
+
+        return {
+            "id": line_ids,
+            "type": "wireframe",
+            "lines": wireframe_tuples,
+        }
