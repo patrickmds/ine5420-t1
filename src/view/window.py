@@ -74,7 +74,6 @@ def main_window():
     while True:
 
         event, values = window.read()
-
         """End program if user closes window"""
         if event == sg.WIN_CLOSED or event == "Exit":
             break
